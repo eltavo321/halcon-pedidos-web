@@ -1,10 +1,10 @@
-# 🛒 Halcón Pedidos Web
+# Halcón Pedidos Web
 
 Sistema web para la gestión y seguimiento de pedidos, desarrollado como parte de la evidencia práctica del curso. Permite administrar usuarios, pedidos y consultar el estado de entregas mediante un sistema basado en roles.
 
 ---
 
-## 📌 Descripción del proyecto
+## Descripción del proyecto
 
 Este sistema permite:
 
@@ -17,7 +17,7 @@ Este sistema permite:
 
 ---
 
-## ⚙️ Tecnologías utilizadas
+## Tecnologías utilizadas
 
 - PHP
 - Laravel
@@ -27,26 +27,26 @@ Este sistema permite:
 
 ---
 
-## 🧩 Funcionalidades principales
+## Funcionalidades principales
 
-### 🔓 Usuario no registrado
+### Usuario no registrado
 
 - Página principal con búsqueda por número de factura
 - Visualización del estado del pedido:
-  - 📦 En proceso → muestra estado y fecha
-  - 🚚 En ruta → muestra información del proceso
-  - ✅ Entregado → muestra evidencia (imagen)
+  - En proceso → muestra estado y fecha
+  - En ruta → muestra información del proceso
+  - Entregado → muestra evidencia (imagen)
 
 ---
 
-### 🔐 Usuario registrado
+### Usuario registrado
 
-#### 📊 Dashboard
+#### Dashboard
 - Panel principal con acceso a módulos
 
 ---
 
-### 👤 Gestión de usuarios
+### Gestión de usuarios
 
 - Listado de usuarios (activos e inactivos)
 - Creación de usuarios con asignación de rol/departamento
@@ -55,7 +55,7 @@ Este sistema permite:
 
 ---
 
-### 📦 Gestión de pedidos
+### Gestión de pedidos
 
 - Listado de pedidos (ordenados del más reciente al más antiguo)
 - Crear pedidos
@@ -69,14 +69,14 @@ Este sistema permite:
 
 ---
 
-### 🗑️ Pedidos archivados
+### Pedidos archivados
 
 - Listado de pedidos eliminados
 - Restauración de pedidos eliminados
 
 ---
 
-## 🗃️ Base de datos
+## Base de datos
 
 El sistema incluye:
 
@@ -86,30 +86,15 @@ El sistema incluye:
 
 ---
 
-## 🌱 Datos de prueba
+## Datos de prueba
 
 Se incluyen seeders/factories para poblar la base de datos con información inicial para pruebas.
 
 ---
 
-## 🚀 Instalación y ejecución
+##  Instalación y ejecución
 
 1. Clonar el repositorio:
 
 ```bash
 git clone https://github.com/eltavo321/halcon-pedidos-web.git
-
-
-
----
-
-# 🚀 Consejo rápido (importante)
-
-Antes de entregarlo:
-
-- Si **NO implementaste algo (ej: evidencia o seeders)** 👉 bórralo del README  
-- Si sí lo hiciste 👉 déjalo (te ayuda a subir calificación)
-
----
-
-Si quieres, puedo hacerte una versión **“honesta” (según lo que sí cumple tu repo)** para que no te cuestionen en la revisión 👀
