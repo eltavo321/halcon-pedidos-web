@@ -9,7 +9,12 @@ class Photo extends Model
 {
     use HasFactory;
 
-    protected $fillable = ['order_id', 'photo_path', 'photo_type', 'uploaded_by'];
+   protected $fillable = [
+    'order_id',
+    'uploaded_by',
+    'path',
+    'type'
+    ];
 
     const TYPE_LOADING = 'loading';
     const TYPE_DELIVERY = 'delivery';
@@ -19,13 +24,18 @@ class Photo extends Model
         self::TYPE_DELIVERY => 'Foto de Entrega',
     ];
 
-    public function order()
+   public function photos()
     {
-        return $this->belongsTo(Order::class);
+        return $this->hasMany(Photo::class);
     }
 
-    public function uploader()
+    public function deliveredPhoto()
     {
-        return $this->belongsTo(User::class, 'uploaded_by');
+        return $this->hasOne(Photo::class)->where('type', 'delivered');
+    }
+
+    public function routePhoto()
+    {
+        return $this->hasOne(Photo::class)->where('type', 'in_route');
     }
 }

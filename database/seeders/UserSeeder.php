@@ -4,54 +4,33 @@ namespace Database\Seeders;
 
 use Illuminate\Database\Seeder;
 use App\Models\User;
-use App\Models\Role;
+use Illuminate\Support\Facades\Hash;
 
 class UserSeeder extends Seeder
 {
-    public function run(): void
+    public function run()
     {
-        // Usuario Administrador
         User::create([
-            'name' => 'Administrador',
-            'email' => 'admin@halcon.com',
-            'password' => bcrypt('password'),
-            'role_id' => Role::where('name', 'admin')->first()->id,
+            'name' => 'Admin',
+            'email' => 'admin@test.com',
+            'password' => Hash::make('12345678'),
+            'role_id' => 1,
             'is_active' => true,
         ]);
 
-        // Usuario Ventas
         User::create([
-            'name' => 'Juan Pérez',
-            'email' => 'ventas@halcon.com',
-            'password' => bcrypt('password'),
-            'role_id' => Role::where('name', 'sales')->first()->id,
+            'name' => 'Ventas',
+            'email' => 'sales@test.com',
+            'password' => Hash::make('12345678'),
+            'role_id' => 2,
             'is_active' => true,
         ]);
 
-        // Usuario Almacén
         User::create([
-            'name' => 'Carlos López',
-            'email' => 'almacen@halcon.com',
-            'password' => bcrypt('password'),
-            'role_id' => Role::where('name', 'warehouse')->first()->id,
-            'is_active' => true,
-        ]);
-
-        // Usuario Ruta
-        User::create([
-            'name' => 'Roberto Martínez',
-            'email' => 'ruta@halcon.com',
-            'password' => bcrypt('password'),
-            'role_id' => Role::where('name', 'route')->first()->id,
-            'is_active' => true,
-        ]);
-
-        // Usuario Compras
-        User::create([
-            'name' => 'María García',
-            'email' => 'compras@halcon.com',
-            'password' => bcrypt('password'),
-            'role_id' => Role::where('name', 'purchasing')->first()->id,
+            'name' => 'Repartidor',
+            'email' => 'route@test.com',
+            'password' => Hash::make('12345678'),
+            'role_id' => 4,
             'is_active' => true,
         ]);
     }

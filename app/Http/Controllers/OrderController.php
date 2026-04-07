@@ -13,22 +13,27 @@ class OrderController extends Controller
         $this->middleware('auth');
     }
 
+    // 📋 LISTADO
     public function index(Request $request)
     {
-        $query = Order::with('creator')->orderBy('created_at', 'desc');
+        $query = Order::with(['creator', 'photos'])->orderBy('created_at', 'desc');
 
         if ($request->filled('invoice_number')) {
             $query->where('invoice_number', 'like', '%' . $request->invoice_number . '%');
         }
+
         if ($request->filled('customer_number')) {
             $query->where('customer_number', 'like', '%' . $request->customer_number . '%');
         }
+
         if ($request->filled('status')) {
             $query->where('status', $request->status);
         }
+
         if ($request->filled('date_from')) {
             $query->whereDate('order_date', '>=', $request->date_from);
         }
+
         if ($request->filled('date_to')) {
             $query->whereDate('order_date', '<=', $request->date_to);
         }
@@ -38,18 +43,21 @@ class OrderController extends Controller
 
         return view('orders.index', compact('orders', 'statuses'));
     }
-public function create()
-{
-    if (!in_array(auth()->user()->role->name, ['admin', 'sales'])) {
-        abort(403, 'No tienes permiso para crear pedidos.');
+
+    // 📝 CREAR
+    public function create()
+    {
+        if (!in_array(auth()->user()->role->name, ['admin', 'sales'])) {
+            abort(403);
+        }
+
+        return view('orders.create');
     }
-    return view('orders.create');
-}
 
     public function store(Request $request)
     {
         if (!in_array(auth()->user()->role->name, ['admin', 'sales'])) {
-            abort(403, 'No tienes permiso para crear pedidos.');
+            abort(403);
         }
 
         $request->validate([
@@ -77,23 +85,28 @@ public function create()
         return redirect()->route('orders.index')->with('success', 'Pedido creado exitosamente.');
     }
 
+    // 👁️ VER
     public function show(Order $order)
     {
+        $order->load('photos');
+
         return view('orders.show', compact('order'));
     }
 
+    // ✏️ EDITAR
     public function edit(Order $order)
     {
         if (!in_array(auth()->user()->role->name, ['admin', 'sales'])) {
-            abort(403, 'No tienes permiso para editar pedidos.');
+            abort(403);
         }
+
         return view('orders.edit', compact('order'));
     }
 
     public function update(Request $request, Order $order)
     {
         if (!in_array(auth()->user()->role->name, ['admin', 'sales'])) {
-            abort(403, 'No tienes permiso para editar pedidos.');
+            abort(403);
         }
 
         $request->validate([
@@ -108,30 +121,40 @@ public function create()
 
         $order->update($request->all());
 
-        return redirect()->route('orders.index')->with('success', 'Pedido actualizado exitosamente.');
+        return redirect()->route('orders.index')->with('success', 'Pedido actualizado.');
     }
 
+    // 🔄 CAMBIO DE ESTADO
     public function updateStatus(Request $request, Order $order)
     {
         $request->validate([
             'status' => 'required|in:' . implode(',', array_keys(Order::$statuses)),
+            'process_name' => 'nullable|string'
         ]);
 
-        $oldStatus = $order->status_label;
-        $order->update(['status' => $request->status]);
+        $order->status = $request->status;
 
-        return redirect()->route('orders.show', $order)->with('success', "Estado cambiado de {$oldStatus} a {$order->status_label}");
+        // 👇 LÓGICA DE PROCESO
+        if ($request->status === Order::STATUS_IN_PROCESS) {
+            $order->process_name = $request->process_name;
+            $order->process_date = now();
+        }
+
+        $order->save();
+
+        return back()->with('success', 'Estado actualizado.');
     }
 
+    // 📸 SUBIR FOTO
     public function uploadPhoto(Request $request, Order $order)
     {
         if (!in_array(auth()->user()->role->name, ['admin', 'route'])) {
-            abort(403, 'No tienes permiso para subir fotos.');
+            abort(403);
         }
 
         $request->validate([
             'photo' => 'required|image|max:5120',
-            'photo_type' => 'required|in:loading,delivery',
+            'photo_type' => 'required|in:in_route,delivered',
         ]);
 
         $path = $request->file('photo')->store('orders/' . $order->id, 'public');
@@ -143,48 +166,66 @@ public function create()
             'uploaded_by' => auth()->id(),
         ]);
 
-        if ($request->photo_type === 'delivery') {
+        // 👇 CAMBIO AUTOMÁTICO DE ESTADO
+        if ($request->photo_type === 'in_route') {
+            $order->update(['status' => Order::STATUS_IN_ROUTE]);
+        }
+
+        if ($request->photo_type === 'delivered') {
             $order->update(['status' => Order::STATUS_DELIVERED]);
         }
 
-        return redirect()->route('orders.show', $order)->with('success', 'Foto subida exitosamente.');
+        return back()->with('success', 'Foto subida.');
     }
 
+    // 🗑️ ELIMINADO LÓGICO
     public function destroy(Order $order)
     {
         if (auth()->user()->role->name !== 'admin') {
-            abort(403, 'No tienes permiso para eliminar pedidos.');
+            abort(403);
         }
+
         $order->delete();
-        return redirect()->route('orders.index')->with('success', 'Pedido eliminado correctamente.');
+
+        return redirect()->route('orders.index')->with('success', 'Pedido eliminado.');
     }
 
+    // 📦 PAPELERA
     public function trashed()
     {
         if (auth()->user()->role->name !== 'admin') {
-            abort(403, 'No tienes permiso para ver pedidos eliminados.');
+            abort(403);
         }
-        $orders = Order::onlyTrashed()->with('creator')->orderBy('deleted_at', 'desc')->paginate(15);
+
+        $orders = Order::onlyTrashed()
+            ->with('creator')
+            ->orderBy('deleted_at', 'desc')
+            ->paginate(15);
+
         return view('orders.trashed', compact('orders'));
     }
 
     public function restore($id)
     {
         if (auth()->user()->role->name !== 'admin') {
-            abort(403, 'No tienes permiso para restaurar pedidos.');
+            abort(403);
         }
+
         $order = Order::onlyTrashed()->findOrFail($id);
         $order->restore();
-        return redirect()->route('orders.trashed')->with('success', 'Pedido restaurado exitosamente.');
+
+        return back()->with('success', 'Pedido restaurado.');
     }
 
     public function forceDelete($id)
     {
         if (auth()->user()->role->name !== 'admin') {
-            abort(403, 'No tienes permiso para eliminar permanentemente pedidos.');
+            abort(403);
         }
+
         $order = Order::onlyTrashed()->findOrFail($id);
         $order->forceDelete();
-        return redirect()->route('orders.trashed')->with('success', 'Pedido eliminado permanentemente.');
+
+        return back()->with('success', 'Eliminado permanentemente.');
     }
 }

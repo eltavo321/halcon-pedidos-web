@@ -11,15 +11,26 @@ class Order extends Model
     use HasFactory, SoftDeletes;
 
     protected $fillable = [
-        'invoice_number', 'customer_name', 'customer_number', 'fiscal_data',
-        'order_date', 'delivery_address', 'notes', 'status', 'created_by'
+        'invoice_number',
+        'customer_name',
+        'customer_number',
+        'fiscal_data',
+        'order_date',
+        'delivery_address',
+        'notes',
+        'status',
+        'created_by',
+        'process_name',      // 👈 NUEVO
+        'process_date'       // 👈 NUEVO
     ];
 
     protected $casts = [
         'order_date' => 'datetime',
+        'process_date' => 'datetime', // 👈 NUEVO
         'deleted_at' => 'datetime',
     ];
 
+    // 📌 ESTADOS
     const STATUS_ORDERED = 'ordered';
     const STATUS_IN_PROCESS = 'in_process';
     const STATUS_IN_ROUTE = 'in_route';
@@ -32,7 +43,7 @@ class Order extends Model
         self::STATUS_DELIVERED => 'Entregado',
     ];
 
-    // Relaciones
+    // 🔗 RELACIONES
     public function creator()
     {
         return $this->belongsTo(User::class, 'created_by');
@@ -43,19 +54,20 @@ class Order extends Model
         return $this->hasMany(Photo::class);
     }
 
-    // Accesores
+    // 👇 RELACIONES ESPECÍFICAS (MEJOR QUE ACCESORES)
+    public function routePhoto()
+    {
+        return $this->hasOne(Photo::class)->where('photo_type', 'in_route');
+    }
+
+    public function deliveredPhoto()
+    {
+        return $this->hasOne(Photo::class)->where('photo_type', 'delivered');
+    }
+
+    // 🧠 ACCESORES
     public function getStatusLabelAttribute()
     {
         return self::$statuses[$this->status] ?? $this->status;
-    }
-
-    public function getLoadingPhotoAttribute()
-    {
-        return $this->photos()->where('photo_type', 'loading')->first();
-    }
-
-    public function getDeliveryPhotoAttribute()
-    {
-        return $this->photos()->where('photo_type', 'delivery')->first();
     }
 }
