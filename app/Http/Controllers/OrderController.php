@@ -47,7 +47,7 @@ class OrderController extends Controller
     // 📝 CREAR
     public function create()
     {
-        if (!in_array(auth()->user()->role->name, ['admin', 'sales'])) {
+        if (!in_array(auth()->user()->role?->name, ['admin', 'sales'])) {
             abort(403);
         }
 
@@ -56,7 +56,7 @@ class OrderController extends Controller
 
     public function store(Request $request)
     {
-        if (!in_array(auth()->user()->role->name, ['admin', 'sales'])) {
+        if (!in_array(auth()->user()->role?->name, ['admin', 'sales'])) {
             abort(403);
         }
 
@@ -82,21 +82,20 @@ class OrderController extends Controller
             'created_by' => auth()->id(),
         ]);
 
-        return redirect()->route('orders.index')->with('success', 'Pedido creado exitosamente.');
+        return redirect()->route('orders.index')->with('success', 'Pedido creado.');
     }
 
     // 👁️ VER
     public function show(Order $order)
     {
-        $order->load('photos');
-
+        $order->load(['routePhoto', 'deliveredPhoto']);
         return view('orders.show', compact('order'));
     }
 
     // ✏️ EDITAR
     public function edit(Order $order)
     {
-        if (!in_array(auth()->user()->role->name, ['admin', 'sales'])) {
+        if (!in_array(auth()->user()->role?->name, ['admin', 'sales'])) {
             abort(403);
         }
 
@@ -105,7 +104,7 @@ class OrderController extends Controller
 
     public function update(Request $request, Order $order)
     {
-        if (!in_array(auth()->user()->role->name, ['admin', 'sales'])) {
+        if (!in_array(auth()->user()->role?->name, ['admin', 'sales'])) {
             abort(403);
         }
 
@@ -134,7 +133,6 @@ class OrderController extends Controller
 
         $order->status = $request->status;
 
-        // 👇 LÓGICA DE PROCESO
         if ($request->status === Order::STATUS_IN_PROCESS) {
             $order->process_name = $request->process_name;
             $order->process_date = now();
@@ -145,10 +143,10 @@ class OrderController extends Controller
         return back()->with('success', 'Estado actualizado.');
     }
 
-    // 📸 SUBIR FOTO
+    // 📸 SUBIR FOTO (ARREGLADO)
     public function uploadPhoto(Request $request, Order $order)
     {
-        if (!in_array(auth()->user()->role->name, ['admin', 'route'])) {
+        if (!in_array(auth()->user()->role?->name, ['admin', 'route'])) {
             abort(403);
         }
 
@@ -157,8 +155,15 @@ class OrderController extends Controller
             'photo_type' => 'required|in:in_route,delivered',
         ]);
 
+        // 🔥 VALIDAR ARCHIVO
+        if (!$request->hasFile('photo')) {
+            return back()->with('error', 'No se seleccionó ninguna imagen.');
+        }
+
+        // 🔥 GUARDAR IMAGEN
         $path = $request->file('photo')->store('orders/' . $order->id, 'public');
 
+        // 🔥 GUARDAR EN BD
         Photo::create([
             'order_id' => $order->id,
             'photo_path' => $path,
@@ -166,7 +171,7 @@ class OrderController extends Controller
             'uploaded_by' => auth()->id(),
         ]);
 
-        // 👇 CAMBIO AUTOMÁTICO DE ESTADO
+        // 🔥 CAMBIAR ESTADO AUTOMÁTICO
         if ($request->photo_type === 'in_route') {
             $order->update(['status' => Order::STATUS_IN_ROUTE]);
         }
@@ -175,13 +180,13 @@ class OrderController extends Controller
             $order->update(['status' => Order::STATUS_DELIVERED]);
         }
 
-        return back()->with('success', 'Foto subida.');
+        return back()->with('success', 'Foto subida correctamente.');
     }
 
     // 🗑️ ELIMINADO LÓGICO
     public function destroy(Order $order)
     {
-        if (auth()->user()->role->name !== 'admin') {
+        if (auth()->user()->role?->name !== 'admin') {
             abort(403);
         }
 
@@ -193,7 +198,7 @@ class OrderController extends Controller
     // 📦 PAPELERA
     public function trashed()
     {
-        if (auth()->user()->role->name !== 'admin') {
+        if (auth()->user()->role?->name !== 'admin') {
             abort(403);
         }
 
@@ -207,7 +212,7 @@ class OrderController extends Controller
 
     public function restore($id)
     {
-        if (auth()->user()->role->name !== 'admin') {
+        if (auth()->user()->role?->name !== 'admin') {
             abort(403);
         }
 
@@ -219,7 +224,7 @@ class OrderController extends Controller
 
     public function forceDelete($id)
     {
-        if (auth()->user()->role->name !== 'admin') {
+        if (auth()->user()->role?->name !== 'admin') {
             abort(403);
         }
 

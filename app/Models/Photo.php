@@ -11,9 +11,9 @@ class Photo extends Model
 
    protected $fillable = [
     'order_id',
-    'uploaded_by',
-    'path',
-    'type'
+    'photo_path',
+    'photo_type',
+    'uploaded_by'
     ];
 
     const TYPE_LOADING = 'loading';

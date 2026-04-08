@@ -10,35 +10,44 @@
 <div class="card mb-4">
     <div class="card-body">
         <form method="GET" action="{{ route('orders.index') }}" class="row g-3">
+
             <div class="col-md-3">
-                <label for="invoice_number" class="form-label">Número Factura</label>
-                <input type="text" class="form-control" id="invoice_number" name="invoice_number" value="{{ request('invoice_number') }}">
+                <label class="form-label">Número Factura</label>
+                <input type="text" class="form-control" name="invoice_number" value="{{ request('invoice_number') }}">
             </div>
+
             <div class="col-md-3">
-                <label for="customer_number" class="form-label">Número Cliente</label>
-                <input type="text" class="form-control" id="customer_number" name="customer_number" value="{{ request('customer_number') }}">
+                <label class="form-label">Número Cliente</label>
+                <input type="text" class="form-control" name="customer_number" value="{{ request('customer_number') }}">
             </div>
+
             <div class="col-md-2">
-                <label for="status" class="form-label">Estado</label>
-                <select class="form-control" id="status" name="status">
+                <label class="form-label">Estado</label>
+                <select class="form-control" name="status">
                     <option value="">Todos</option>
-                    @foreach( as  => )
-                        <option value="{{  }}" {{ request('status') ==  ? 'selected' : '' }}>{{  }}</option>
+                    @foreach($statuses as $key => $value)
+                        <option value="{{ $key }}" {{ request('status') == $key ? 'selected' : '' }}>
+                            {{ $value }}
+                        </option>
                     @endforeach
                 </select>
             </div>
+
             <div class="col-md-2">
-                <label for="date_from" class="form-label">Fecha Desde</label>
-                <input type="date" class="form-control" id="date_from" name="date_from" value="{{ request('date_from') }}">
+                <label class="form-label">Fecha Desde</label>
+                <input type="date" class="form-control" name="date_from" value="{{ request('date_from') }}">
             </div>
+
             <div class="col-md-2">
-                <label for="date_to" class="form-label">Fecha Hasta</label>
-                <input type="date" class="form-control" id="date_to" name="date_to" value="{{ request('date_to') }}">
+                <label class="form-label">Fecha Hasta</label>
+                <input type="date" class="form-control" name="date_to" value="{{ request('date_to') }}">
             </div>
+
             <div class="col-12">
                 <button type="submit" class="btn btn-primary">Buscar</button>
                 <a href="{{ route('orders.index') }}" class="btn btn-secondary">Limpiar</a>
             </div>
+
         </form>
     </div>
 </div>
@@ -56,16 +65,18 @@
                 <th>Acciones</th>
             </tr>
         </thead>
+
         <tbody>
-            @forelse( as )
+            @forelse($orders as $order)
             <tr>
-                <td>{{ ->invoice_number }}</td>
-                <td>{{ ->customer_name }}</td>
-                <td>{{ ->customer_number }}</td>
-                <td>{{ ->order_date->format('d/m/Y') }}</td>
+                <td>{{ $order->invoice_number }}</td>
+                <td>{{ $order->customer_name }}</td>
+                <td>{{ $order->customer_number }}</td>
+                <td>{{ $order->order_date->format('d/m/Y') }}</td>
+
                 <td>
                     @php
-                         = match(->status) {
+                        $badge = match($order->status) {
                             'ordered' => 'bg-secondary',
                             'in_process' => 'bg-warning',
                             'in_route' => 'bg-info',
@@ -73,21 +84,30 @@
                             default => 'bg-secondary'
                         };
                     @endphp
-                    <span class="badge {{  }}">{{ ->status_label }}</span>
+
+                    <span class="badge {{ $badge }}">
+                        {{ $order->status_label }}
+                    </span>
                 </td>
-                <td>{{ ->creator->name ?? 'N/A' }}</td>
+
+                <td>{{ $order->creator?->name ?? 'N/A' }}</td>
+
                 <td>
-                    <a href="{{ route('orders.show', ) }}" class="btn btn-info btn-sm">Ver</a>
-                    <a href="{{ route('orders.edit', ) }}" class="btn btn-warning btn-sm">Editar</a>
-                    @if(auth()->user()->role->name == 'admin')
-                    <form action="{{ route('orders.destroy', ) }}" method="POST" class="d-inline">
+                    <a href="{{ route('orders.show', $order) }}" class="btn btn-info btn-sm">Ver</a>
+                    <a href="{{ route('orders.edit', $order) }}" class="btn btn-warning btn-sm">Editar</a>
+
+                    @if(auth()->user()->role?->name === 'admin')
+                    <form action="{{ route('orders.destroy', $order) }}" method="POST" class="d-inline">
                         @csrf
                         @method('DELETE')
-                        <button type="submit" class="btn btn-danger btn-sm" onclick="return confirm('¿Eliminar este pedido?')">Eliminar</button>
+                        <button class="btn btn-danger btn-sm" onclick="return confirm('¿Eliminar este pedido?')">
+                            Eliminar
+                        </button>
                     </form>
                     @endif
                 </td>
             </tr>
+
             @empty
             <tr>
                 <td colspan="7" class="text-center">No hay pedidos registrados</td>
@@ -97,5 +117,7 @@
     </table>
 </div>
 
-{{ ->links() }}
+{{-- PAGINACIÓN --}}
+{{ $orders->links() }}
+
 @endsection

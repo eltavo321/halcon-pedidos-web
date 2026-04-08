@@ -20,13 +20,13 @@ class Order extends Model
         'notes',
         'status',
         'created_by',
-        'process_name',      // 👈 NUEVO
-        'process_date'       // 👈 NUEVO
+        'process_name',
+        'process_date'
     ];
 
     protected $casts = [
         'order_date' => 'datetime',
-        'process_date' => 'datetime', // 👈 NUEVO
+        'process_date' => 'datetime',
         'deleted_at' => 'datetime',
     ];
 
@@ -54,7 +54,6 @@ class Order extends Model
         return $this->hasMany(Photo::class);
     }
 
-    // 👇 RELACIONES ESPECÍFICAS (MEJOR QUE ACCESORES)
     public function routePhoto()
     {
         return $this->hasOne(Photo::class)->where('photo_type', 'in_route');
@@ -65,7 +64,7 @@ class Order extends Model
         return $this->hasOne(Photo::class)->where('photo_type', 'delivered');
     }
 
-    // 🧠 ACCESORES
+    // 🧠 ACCESOR
     public function getStatusLabelAttribute()
     {
         return self::$statuses[$this->status] ?? $this->status;

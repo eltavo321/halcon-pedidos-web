@@ -2,7 +2,7 @@
 
 @section('content')
 <div class="d-flex justify-content-between align-items-center mb-4">
-    <h1>Pedido #{{ ->invoice_number }}</h1>
+    <h1>Pedido #{{ $order->invoice_number }}</h1>
     <a href="{{ route('orders.index') }}" class="btn btn-secondary">← Volver</a>
 </div>
 
@@ -13,14 +13,15 @@
                 <h4>Información del Pedido</h4>
             </div>
             <div class="card-body">
-                <p><strong>Factura:</strong> {{ ->invoice_number }}</p>
-                <p><strong>Cliente:</strong> {{ ->customer_name }}</p>
-                <p><strong>N° Cliente:</strong> {{ ->customer_number }}</p>
-                <p><strong>Fecha:</strong> {{ ->order_date->format('d/m/Y H:i') }}</p>
-                <p><strong>Dirección:</strong> {{ ->delivery_address }}</p>
+                <p><strong>Factura:</strong> {{ $order->invoice_number }}</p>
+                <p><strong>Cliente:</strong> {{ $order->customer_name }}</p>
+                <p><strong>N° Cliente:</strong> {{ $order->customer_number }}</p>
+                <p><strong>Fecha:</strong> {{ $order->order_date->format('d/m/Y H:i') }}</p>
+                <p><strong>Dirección:</strong> {{ $order->delivery_address }}</p>
+
                 <p><strong>Estado:</strong> 
                     @php
-                         = match(->status) {
+                        $badge = match($order->status) {
                             'ordered' => 'bg-secondary',
                             'in_process' => 'bg-warning',
                             'in_route' => 'bg-info',
@@ -28,19 +29,23 @@
                             default => 'bg-secondary'
                         };
                     @endphp
-                    <span class="badge {{  }}">{{ ->status_label }}</span>
+
+                    <span class="badge {{ $badge }}">{{ $order->status_label }}</span>
                 </p>
-                @if(->fiscal_data)
-                    <p><strong>Datos Fiscales:</strong><br>{{ ->fiscal_data }}</p>
+
+                @if($order->fiscal_data)
+                    <p><strong>Datos Fiscales:</strong><br>{{ $order->fiscal_data }}</p>
                 @endif
-                @if(->notes)
-                    <p><strong>Notas:</strong><br>{{ ->notes }}</p>
+
+                @if($order->notes)
+                    <p><strong>Notas:</strong><br>{{ $order->notes }}</p>
                 @endif
-                <p><strong>Creado por:</strong> {{ ->creator->name ?? 'N/A' }}</p>
+
+                <p><strong>Creado por:</strong> {{ $order->creator->name ?? 'N/A' }}</p>
             </div>
         </div>
     </div>
-    
+
     <div class="col-md-6">
         <!-- Cambiar Estado -->
         <div class="card mb-4">
@@ -48,47 +53,50 @@
                 <h4>Cambiar Estado</h4>
             </div>
             <div class="card-body">
-                <form action="{{ route('orders.update-status', ) }}" method="POST">
+                <form action="{{ route('orders.update-status', $order) }}" method="POST">
                     @csrf
                     @method('PATCH')
+
                     <div class="row">
                         <div class="col-md-8">
                             <select name="status" class="form-control" required>
-                                <option value="ordered" {{ ->status == 'ordered' ? 'selected' : '' }}>Pedido</option>
-                                <option value="in_process" {{ ->status == 'in_process' ? 'selected' : '' }}>En Proceso</option>
-                                <option value="in_route" {{ ->status == 'in_route' ? 'selected' : '' }}>En Ruta</option>
-                                <option value="delivered" {{ ->status == 'delivered' ? 'selected' : '' }}>Entregado</option>
+                                <option value="ordered" {{ $order->status == 'ordered' ? 'selected' : '' }}>Pedido</option>
+                                <option value="in_process" {{ $order->status == 'in_process' ? 'selected' : '' }}>En Proceso</option>
+                                <option value="in_route" {{ $order->status == 'in_route' ? 'selected' : '' }}>En Ruta</option>
+                                <option value="delivered" {{ $order->status == 'delivered' ? 'selected' : '' }}>Entregado</option>
                             </select>
                         </div>
                         <div class="col-md-4">
-                            <button type="submit" class="btn btn-primary w-100">Actualizar</button>
+                            <button class="btn btn-primary w-100">Actualizar</button>
                         </div>
                     </div>
                 </form>
             </div>
         </div>
-        
+
         <!-- Subir Fotos -->
-        @if(in_array(auth()->user()->role->name, ['admin', 'route']))
+        @if(auth()->user()->hasRole(['admin', 'route']))
         <div class="card mb-4">
             <div class="card-header">
                 <h4>Subir Evidencia</h4>
             </div>
             <div class="card-body">
-                <form action="{{ route('orders.upload-photo', ) }}" method="POST" enctype="multipart/form-data">
+                <form action="{{ route('orders.upload-photo', $order) }}" method="POST" enctype="multipart/form-data">
                     @csrf
+
                     <div class="mb-3">
-                        <label class="form-label">Tipo de Foto</label>
+                        <label>Tipo de Foto</label>
                         <select name="photo_type" class="form-control" required>
-                            <option value="loading">Foto de Carga</option>
-                            <option value="delivery">Foto de Entrega</option>
+                            <option value="in_route">En Ruta</option>
+                            <option value="delivered">Entregado</option>
                         </select>
                     </div>
+
                     <div class="mb-3">
-                        <label class="form-label">Seleccionar Foto</label>
-                        <input type="file" name="photo" class="form-control" accept="image/*" required>
+                        <input type="file" name="photo" class="form-control" required>
                     </div>
-                    <button type="submit" class="btn btn-success w-100">Subir Foto</button>
+
+                    <button class="btn btn-success w-100">Subir</button>
                 </form>
             </div>
         </div>
@@ -96,34 +104,29 @@
     </div>
 </div>
 
-<!-- Fotos de Evidencia -->
+<!-- Fotos -->
 <div class="row mt-4">
     <div class="col-md-6">
         <div class="card">
-            <div class="card-header">
-                <h4>Foto de Carga</h4>
-            </div>
+            <div class="card-header">Foto de Ruta</div>
             <div class="card-body text-center">
-                @if(->loading_photo)
-                    <img src="{{ asset('storage/' . ->loading_photo->photo_path) }}" class="img-fluid" style="max-height: 300px;">
-                    <p class="mt-2 text-muted">Subida por: {{ ->loading_photo->uploader->name ?? 'N/A' }}</p>
+                @if($order->routePhoto)
+                    <img src="{{ asset('storage/' . $order->routePhoto->photo_path) }}" class="img-fluid">
                 @else
-                    <p class="text-muted">No hay foto de carga disponible</p>
+                    <p>No disponible</p>
                 @endif
             </div>
         </div>
     </div>
+
     <div class="col-md-6">
         <div class="card">
-            <div class="card-header">
-                <h4>Foto de Entrega</h4>
-            </div>
+            <div class="card-header">Foto de Entrega</div>
             <div class="card-body text-center">
-                @if(->delivery_photo)
-                    <img src="{{ asset('storage/' . ->delivery_photo->photo_path) }}" class="img-fluid" style="max-height: 300px;">
-                    <p class="mt-2 text-muted">Subida por: {{ ->delivery_photo->uploader->name ?? 'N/A' }}</p>
+                @if($order->deliveredPhoto)
+                    <img src="{{ asset('storage/' . $order->deliveredPhoto->photo_path) }}" class="img-fluid">
                 @else
-                    <p class="text-muted">No hay foto de entrega disponible</p>
+                    <p>No disponible</p>
                 @endif
             </div>
         </div>

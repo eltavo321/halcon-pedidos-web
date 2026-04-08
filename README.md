@@ -4,6 +4,11 @@ Sistema web para la gestión y seguimiento de pedidos, desarrollado como parte d
 
 ---
 
+## 📚 Documentación del proyecto
+
+📄 Documentación completa:
+- https://docs.google.com/document/d/1Bqt3jw_ud83PJtv1vuXBGRjAG3vOSVKEF8qBMSYn3jI/edit?usp=sharing
+
 ## Descripción del proyecto
 
 Este sistema permite:
@@ -33,9 +38,9 @@ Este sistema permite:
 
 - Página principal con búsqueda por número de factura
 - Visualización del estado del pedido:
-  - En proceso → muestra estado y fecha
-  - En ruta → muestra información del proceso
-  - Entregado → muestra evidencia (imagen)
+  - En proceso
+  - En ruta
+  - Entregado (con evidencia)
 
 ---
 
@@ -49,52 +54,41 @@ Este sistema permite:
 ### Gestión de usuarios
 
 - Listado de usuarios (activos e inactivos)
-- Creación de usuarios con asignación de rol/departamento
-- Edición de datos del usuario
-- Activación / desactivación de usuarios
+- Creación de usuarios con rol/departamento
+- Edición de datos
+- Activación / desactivación
 
 ---
 
 ### Gestión de pedidos
 
-- Listado de pedidos (ordenados del más reciente al más antiguo)
-- Crear pedidos
-- Editar pedidos
-- Cambiar estado del pedido:
+- Listado ordenado por fecha
+- Crear y editar pedidos
+- Cambio de estado:
   - En proceso
-  - En ruta (permite subir evidencia)
-  - Entregado (permite subir evidencia)
-- Visualizar detalles del pedido
+  - En ruta (con evidencia)
+  - Entregado (con evidencia)
+- Visualización de detalles
 - Eliminación lógica (soft delete)
 
 ---
 
 ### Pedidos archivados
 
-- Listado de pedidos eliminados
-- Restauración de pedidos eliminados
+- Visualización de pedidos eliminados
+- Restauración de registros
 
 ---
 
 ## Base de datos
 
-El sistema incluye:
-
 - Migraciones con relaciones entre entidades
 - Llaves primarias y foráneas
-- Seeders para generación de datos de prueba
+- Seeders y factories para datos de prueba
 
 ---
 
-## Datos de prueba
-
-Se incluyen seeders/factories para poblar la base de datos con información inicial para pruebas.
-
----
-
-##  Instalación y ejecución
-
-1. Clonar el repositorio:
+## Instalación y ejecución
 
 ```bash
 git clone https://github.com/eltavo321/halcon-pedidos-web.git
